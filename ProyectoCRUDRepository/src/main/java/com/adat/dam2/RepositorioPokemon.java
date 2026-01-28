@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RepositorioPokemon extends CrudRepository<Pokemon, Long> {
-    
+    boolean existsByNombreIgnoreCase(String nombre);
 }

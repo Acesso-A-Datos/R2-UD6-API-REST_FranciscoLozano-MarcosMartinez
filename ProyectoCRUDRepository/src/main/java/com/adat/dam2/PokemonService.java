@@ -1,8 +1,11 @@
 package com.adat.dam2;
 
 import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -17,7 +20,7 @@ public class PokemonService {
     // Listar todos
     public List<Pokemon> listarTodos() {
     	
-    	// findAll() devuelve Iterable<Pokemon>, se convierte a List
+    	// findAll() devuelve Iterable<Pokemon>, se convierte a HasSet
         return (List<Pokemon>) repositorio.findAll();
     }
 
@@ -44,10 +47,16 @@ public class PokemonService {
     }
 
     // Guardar (con validación de nombre duplicado)
-    public Pokemon guardar(Pokemon pokemon) {
+    public Optional<Pokemon> guardar(Pokemon pokemon) {
     	
     	// save() persiste el objeto en la base de datos
-        return repositorio.save(pokemon);
+    	if (repositorio.existsByNombreIgnoreCase(pokemon.getNombre())) {
+    		return Optional.empty();
+    	}
+    	// Si todo va bien se crea el pokemon
+    	Pokemon pokemonCreado = repositorio.save(pokemon);
+    	
+    	return Optional.of(pokemonCreado);
     }
 
     // Verificar si existe por ID (para PUT/PATCH/DELETE)

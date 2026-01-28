@@ -1,6 +1,9 @@
 package com.adat.dam2;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,8 +70,10 @@ public class ControladorPokemon {
          *  - cabeceras (si hiciera falta)
          * ResponseEntity.ok(...) -> HTTP 200
          */
-
-        return ResponseEntity.ok(service.listarTodos());
+    	ResponseEntity<List<Pokemon>> resultado = ResponseEntity.ok(service.listarTodos());
+    	System.out.println("GET ALL: " + resultado.getStatusCode());
+    	
+        return resultado;
     }
 
     /*
@@ -96,11 +101,15 @@ public class ControladorPokemon {
          * Optional evita usar null.
          */
 
-        return service.buscarPorId(id)
+    	ResponseEntity<Pokemon> resultado = service.buscarPorId(id)
                 // Si existe -> 200 OK + Pokémon
                 .map(ResponseEntity::ok)
                 // Si no existe -> 404 Not Found
                 .orElse(ResponseEntity.notFound().build());
+    	
+    	System.out.println("GET BY ID: " + resultado.getStatusCode());
+    	
+        return resultado;
     }
 
     /*
@@ -111,7 +120,7 @@ public class ControladorPokemon {
      */
 
     @PostMapping
-    public ResponseEntity<?> postPokemon(
+    public ResponseEntity<Optional<Pokemon>> postPokemon(
 
             /*
              * @RequestBody
@@ -128,9 +137,13 @@ public class ControladorPokemon {
          * Se usa cuando un recurso se crea correctamente.
          */
 
-        return ResponseEntity
+    	ResponseEntity<Optional<Pokemon>> resultado = ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(service.guardar(pokemon));
+    	
+    	System.out.println("POST: " + resultado.getStatusCode());
+    	
+        return resultado;
     }
 
     /*
@@ -140,7 +153,7 @@ public class ControladorPokemon {
      */
 
     @PutMapping("/{id}")
-    public ResponseEntity<Pokemon> putPokemon(
+    public ResponseEntity<Optional<Pokemon>> putPokemon(
 
             // @PathVariable vuelve a capturar el id de la URL
             @PathVariable(name = "id") Long id,
@@ -153,12 +166,16 @@ public class ControladorPokemon {
 
             @RequestBody Pokemon datosNuevos) {
 
+    	ResponseEntity<Optional<Pokemon>> resultado;
+    	
         // Si el Pokémon no existe, devuelve 404
         if (!service.existeId(id)) {
-            return ResponseEntity.notFound().build();
+        	resultado = ResponseEntity.notFound().build();
+        	System.out.println("PUT :" + resultado.getStatusCode());
+            return resultado;
         }
 
-        return service.buscarPorId(id).map(p -> {
+        resultado = service.buscarPorId(id).map(p -> {
 
             // Se reemplazan todos los campos
             p.setNombre(datosNuevos.getNombre());
@@ -168,6 +185,10 @@ public class ControladorPokemon {
             return ResponseEntity.ok(service.guardar(p));
 
         }).orElse(ResponseEntity.notFound().build());
+        
+        System.out.println("PUT: " + resultado.getStatusCode());
+        
+        return resultado;
     }
 
     /*
@@ -189,7 +210,7 @@ public class ControladorPokemon {
 
             @RequestBody Pokemon pokemonDatosNuevos) {
 
-        return service.actualizarParcial(id, pokemonDatosNuevos)
+    	ResponseEntity<Pokemon> resultado = service.actualizarParcial(id, pokemonDatosNuevos)
                 /*
                  * service.actualizarParcial(id, pokemonDatosNuevos)
                  * devuelve Optional<Pokemon>:
@@ -205,6 +226,10 @@ public class ControladorPokemon {
                  */
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    	
+    	System.out.println("PATCH: " + resultado.getStatusCode());
+    	
+        return resultado;
     }
 
     /*
@@ -219,6 +244,8 @@ public class ControladorPokemon {
             // @PathVariable captura el id de la URL
             @PathVariable(name = "id") Long id) {
 
+    	ResponseEntity<Void> resultado;
+    	
         if (service.existeId(id)) {
             service.eliminar(id);
 
@@ -228,9 +255,15 @@ public class ControladorPokemon {
              * Significa: borrado correcto sin cuerpo.
              */
 
-            return ResponseEntity.noContent().build();
+            resultado = ResponseEntity.noContent().build();
+            System.out.println("DELETE: " + resultado.getStatusCode());
+            
+            return resultado;
         }
 
-        return ResponseEntity.notFound().build();
+        resultado = ResponseEntity.notFound().build();
+        System.out.println("DELETE: " + resultado.getStatusCode());
+        
+        return resultado;
     }
 }
